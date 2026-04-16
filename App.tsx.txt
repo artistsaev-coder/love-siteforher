@@ -1,0 +1,92 @@
+import { useState, useEffect } from 'react';
+import { Heart } from 'lucide-react';
+
+interface TimeElapsed {
+  days: number;
+  hours: number;
+  minutes: number;
+  seconds: number;
+}
+
+interface LoveTimerProps {
+  startDate: Date;
+}
+
+function getElapsed(startDate: Date): TimeElapsed {
+  const diff = Date.now() - startDate.getTime();
+  const totalSeconds = Math.max(0, Math.floor(diff / 1000));
+  const days = Math.floor(totalSeconds / 86400);
+  const hours = Math.floor((totalSeconds % 86400) / 3600);
+  const minutes = Math.floor((totalSeconds % 3600) / 60);
+  const seconds = totalSeconds % 60;
+  return { days, hours, minutes, seconds };
+}
+
+function Segment({ value, label }: { value: number; label: string }) {
+  return (
+    <div className="flex flex-col items-center">
+      <div
+        className="glass-card rounded-2xl px-4 py-3 min-w-[70px] text-center"
+        style={{ minWidth: 72 }}
+      >
+        <span
+          className="block text-white font-bold leading-none"
+          style={{
+            fontFamily: "'Playfair Display', serif",
+            fontSize: '2.2rem',
+          }}
+        >
+          {String(value).padStart(2, '0')}
+        </span>
+        <span
+          className="block text-white/70 mt-1"
+          style={{
+            fontFamily: "'Lato', sans-serif",
+            fontSize: '0.65rem',
+            letterSpacing: '0.12em',
+            textTransform: 'uppercase',
+          }}
+        >
+          {label}
+        </span>
+      </div>
+    </div>
+  );
+}
+
+export default function LoveTimer({ startDate }: LoveTimerProps) {
+  const [elapsed, setElapsed] = useState<TimeElapsed>(() => getElapsed(startDate));
+
+  useEffect(() => {
+    const id = setInterval(() => setElapsed(getElapsed(startDate)), 1000);
+    return () => clearInterval(id);
+  }, [startDate]);
+
+  return (
+    <div className="flex flex-col items-center gap-3 mt-2">
+      <div className="flex items-center gap-2 text-white/80">
+        <Heart size={14} fill="currentColor" className="text-rose-200" />
+        <span
+          style={{
+            fontFamily: "'Lato', sans-serif",
+            fontSize: '0.8rem',
+            letterSpacing: '0.15em',
+            textTransform: 'uppercase',
+          }}
+        >
+          Together for
+        </span>
+        <Heart size={14} fill="currentColor" className="text-rose-200" />
+      </div>
+      <div className="flex items-end gap-2 sm:gap-3">
+        <Segment value={elapsed.days} label="days" />
+        <span className="text-white/50 text-2xl pb-4 font-light">:</span>
+        <Segment value={elapsed.hours} label="hours" />
+        <span className="text-white/50 text-2xl pb-4 font-light">:</span>
+        <Segment value={elapsed.minutes} label="min" />
+        <span className="text-white/50 text-2xl pb-4 font-light">:</span>
+        <Segment value={elapsed.seconds} label="sec" />
+      </div>
+    </div>
+  );
+}
